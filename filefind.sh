@@ -1,27 +1,31 @@
 #!/bin/bash
 # Working example!
-# How to find files maybe usefull for custom collections
 # by cyperghost
 # Without using IFS or other bad tricks!
-
 search="Tetris"
 extension=".*\(gb\|smc\)"
 rombase="/home/pi/RetroPie/roms"
 
 cd $rombase
-filearray=$(find -name "$search*" -iregex "$extension")
+filearray=$(find -iname "$search*" -iregex "$extension")
+
 
 # Rebuild Filenames, if $i starts with "./" an new filename is found
 # Array postion 1 is always empty, we may can use that later
-for i in ${filearray[@]}; do
+for i in $filearray; do
+#    [[ ${i:0:2} == "./" ]] && array+=("$ii") && ii= && ii="$i"
+#    [[ ${i:0:2} != "./" ]] && ii="$ii $i"
+
     if [[ ${i:0:2} == "./" ]]; then
-        array+=("${ii:1}")
+        array+=("$ii")
         ii=
+        ii="$i"
     fi
 
     ii="$ii $i"
 
 done
+
 unset filearray
 
 # Array done
