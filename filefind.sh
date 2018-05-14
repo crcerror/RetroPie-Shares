@@ -13,19 +13,16 @@ filearray=$(find -iname "$search*" -iregex "$extension")
 # Rebuild Filenames, if $i starts with "./" an new filename is found
 # Array postion 1 is always empty, we may can use that later
 for i in $filearray; do
-#    [[ ${i:0:2} == "./" ]] && array+=("$ii") && ii= && ii="$i"
-#    [[ ${i:0:2} != "./" ]] && ii="$ii $i"
-
     if [[ ${i:0:2} == "./" ]]; then
         array+=("$ii")
         ii=
         ii="$i"
+    else
+        ii="$ii $i"
     fi
-
-    ii="$ii $i"
-
 done
-
+    array+=("$ii") #Put last entry in array! Finally!
+        
 unset filearray
 
 # Array done
