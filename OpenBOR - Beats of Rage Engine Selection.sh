@@ -14,11 +14,14 @@
 #             > copy a cfg file to $BORBASE_DIR and name it master.bor.cfg
 #             > so a once done setup file must be copied from $KEYCONF_DIR to $BORBASE_DIR
 #
+# For setup: please edit nano /opt/retropie/configs/ports/openbor/emulators.cfg
+#            and add a %ROM% after OpenBOR binary call
+#
 # coded by cyperghost
 # For https://retropie.org.uk/
 
 ###### --------------------- INIT ---------------------
-readonly VERSION="0.95_063018"
+readonly VERSION="0.99_070218"
 readonly TITLE="OpenBOR - cyperghosts Episode selector"
 readonly BORBASE_DIR="/home/pi/RetroPie/roms/ports/openbor"
 readonly ROOTDIR="/opt/retropie"
@@ -53,11 +56,10 @@ function end_joy(){
 
 ###### --------------- Dialog Functions ---------------
 
-# Dialog Error
-# Display dialog --msgbox with text parsed with by function call
+# Show Infobox // $1 = Textmessage, $2 = seconds box will appear, $3 = Boxtitlemessage
 
-function dialog_error() {
-    dialog --title " Error " --backtitle " $TITLE - $VERSION " --infobox "$1" 0 0
+function show_msg() {
+    dialog --title " $3 " --backtitle " $TITLE - $VERSION " --infobox "$1" 0 0
     sleep "$2"; clear
 	}
 
@@ -130,14 +132,14 @@ if [[ -d $BORBASE_DIR ]]; then
     cd "$BORBASE_DIR"
     bor_files=$(find -maxdepth 1 -iname "*.bor" -type d 2>/dev/null)
 else
-    dialog_error "No $BORBASE_DIR found!" "3"
+    show_msg "No $BORBASE_DIR found!" "3" "Fatal error!"
     exit
 fi
 
 # Are there any BOR Directories available?
 
 if [[ -z $bor_files ]]; then
-    dialog_error "No BOR directories found in location:\n$BORBASE_DIR" "3"
+    show_msg "No BOR directories found in location:\n\n$BORBASE_DIR" "3" "Error!"
     exit
 fi
 
@@ -151,7 +153,7 @@ clear
 end_joy; sleep 0.5
 
 if [[ -z $BOR_file ]]; then
-    dialog_error "No Selection made ... Returning to ES!" "2"
+    show_msg "No Selection made...Returning to ES!" "2" "Really? :("
     exit
 fi
 
@@ -162,7 +164,7 @@ fi
 BOR_cfg="$KEYCONF_DIR${BOR_file#.*}.cfg"
 if [[ ! -f $BOR_cfg && -f $BORBASE_DIR/master.bor.cfg  ]]; then
     cp "$BORBASE_DIR/master.bor.cfg" "$BOR_cfg"
-    dialog_error "Copied config-file from:\n$BORBASE_DIR/master.bor.cfg\n    to:\n$BOR_cfg\n\nStarting game ${BOR_file:2:-4} in a few seconds!" "8"
+    show_msg "Copied config-file from:\n$BORBASE_DIR/master.bor.cfg\n    to:\n$BOR_cfg\n\nStarting game ${BOR_file:2:-4} in a few seconds!" "8" "Setup"
 fi
 
 # Finally using RUNCOMMAND.SH to initiate prober start of games
