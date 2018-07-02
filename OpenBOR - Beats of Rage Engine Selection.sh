@@ -1,4 +1,4 @@
-!/bin/bash
+#!/bin/bash
 # Graphical Menu to select OpenBOR custom files
 # Thank to @darknior for working on OpenBOR on RetroPie forum
 # Follow him @chronocrash official forum
