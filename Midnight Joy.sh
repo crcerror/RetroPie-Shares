@@ -47,7 +47,7 @@ fi
 # ------- PROC -------
 if [[ -f $MC_CONFSTD/conf_ready ]]; then
     mc
-elif [[ -f $MC_CONFDIR/.config.mc/conf_ready ]]; then
+elif [[ -f $MC_CONFDIR/.config/mc/conf_ready ]]; then
     MC_HOME="$MC_CONFDIR" mc
 elif [[ ! -d $MC_CONFDIR && ! -d $MC_CONFSTD ]]; then
     mkdir -p $MC_CONFSTD; cd $MC_CONFSTD
