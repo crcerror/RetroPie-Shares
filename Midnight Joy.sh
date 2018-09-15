@@ -16,7 +16,7 @@
 function first_start {
     touch "conf_ready"
     echo -e "[panel]\nMark = insert; ctrl-t; space" > mc.keymap
-    echo -e "[Midnight-Commander]\nconfirm_exit=1\nconfirm_execute=1\nskin=dark\nuse_internal_edit=1" > ini
+    echo -e "[Midnight-Commander]\nconfirm_exit=1\nconfirm_execute=1\nskin=dark\nuse_internal_edit=1\ndrop_menus=1" > ini
     echo -e "[Layout]\nmessage_visible=0\ncommand_prompt=0" >> ini
     echo "Please Restart script!"; sleep 5
 }
