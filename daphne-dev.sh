@@ -20,7 +20,7 @@ function sources_lr-daphne() {
 
 function build_lr-daphne() {
     make clean
-    make
+    make platform=pi -j4
     md_ret_require="$md_build/daphne_libretro.so"
 }
 
