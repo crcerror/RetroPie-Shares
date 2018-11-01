@@ -14,14 +14,15 @@
 # so I recommend the mpg123 method brought by synack
 # Read here how to setup https://retropie.org.uk/forum/topic/9133
 
-# Setup Musicplayer and Channel you want to change volume here 
+# Setup Musicplayer and Channel you want to change volume here
 readonly VOLUMECHANNEL="PCM"
 readonly MUSICPLAYER="mpg123"
 
 # Get ALSA volume value and calculate step
 VOLUMEALSA=$(amixer -M get $VOLUMECHANNEL | grep -o "...%]")
 VOLUMEALSA=${VOLUMEALSA//[^[:alnum:].]/}
-VOLUMESTEP=$(expr $VOLUMEALSA / 10)
+VOLUMESTEP=$(echo "scale=1; $VOLUMEALSA/20" | bc -l) # Volume with float
+#VOLUMESTEP=$(($VOLUMEALSA/20)) # Old version this will calculate only integer
 
 # ALSA-Commands
 VOLUMEZERO="amixer -q -M set $VOLUMECHANNEL 0%"
@@ -32,10 +33,10 @@ PLAYERPID="$(pidof $MUSICPLAYER)"
 PLAYERSTATUS=$(ps -ostate= -p $PLAYERPID)
 
 if [[ $PLAYERSTATUS == *S* ]]; then
-    # Fading down and pausing in ten steps
-    for a in {0..9}; do
+    # Fading down and pausing in twenty steps
+    for a in {0..19}; do
         amixer -q -M set "$VOLUMECHANNEL" "${VOLUMESTEP}%-"
-        sleep 0.2
+        sleep 0.1
     done
 
     $VOLUMEZERO
@@ -48,9 +49,10 @@ elif [[ $PLAYERSTATUS == *T* ]]; then
     $VOLUMEZERO
     sleep 0.5
     kill -18 $PLAYERPID
-    for a in {0..9}; do
+    for a in {0..19}; do
+        [[ $a -lt 13 ]] && sleep 0.1
+        [[ $a -gt 12 ]] && sleep 0.25
         amixer -q -M set "$VOLUMECHANNEL" "${VOLUMESTEP}%+"
-        sleep 0.2
     done
     $VOLUMERESET
 else
