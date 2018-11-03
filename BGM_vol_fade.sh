@@ -7,13 +7,15 @@
 #
 # Place the script in runcommand-onstart.sh to fade-out
 # Place the script in runcommand-onend.sh to fade-in
-# For the onend script I recommend a line like this: 
+# For the onend script I recommend a line like this:
 # (sleep 2 && $HOME/RetroPie/scripts/vol_fade.sh) &
 #
 # Status of musicplayer is determinated automatically
 #
 # by cyperghost
-# 2018/11/01 - All saints' Day
+# 2018/10/31 - Halloween - Initial version
+# 2018/11/01 - All saints' Day - Improved fadein, avoid 2nd script run
+# 2018/11/03 - Detection of Playerstatus improved, code cleanup
 
 # Reason: I like the pyscript for BGM but it has it flaws and caveeats
 # so I recommend the mpg123 method brought by synack
@@ -41,19 +43,19 @@ VOLUMERESET="amixer -q -M set $VOLUMECHANNEL $VOLUMEALSA%"
 
 # Player-Status
 PLAYERPID="$(pidof $MUSICPLAYER)"
-PLAYERSTATUS=$(ps -ostate= -p $PLAYERPID)
+PLAYERSTATUS=$(ps -ostate= -p $PLAYERPID 2> /dev/null)
 
 function set_step() {
     case $FADEVOLUME in
-        [1-4][0-9]|40) VOLUMESTEP=5 ;;
+        [1-4][0-9]|50) VOLUMESTEP=5 ;;
         [5-7][0-9]|80) VOLUMESTEP=3 ;;
         [8-9][0-9]|100) VOLUMESTEP=1 ;;
         *) VOLUMESTEP=5 ;;
      esac
 }
 
-if [[ $PLAYERSTATUS == *S* ]]; then
-    # Fading down and pausing in twenty steps
+if [[ ${PLAYERSTATUS,,} == *s* || ${PLAYERSTATUS,,} == *r* ]]; then
+    # Fading out and stop music
     FADEVOLUME=$VOLUMEALSA
     until [[ $FADEVOLUME -le 10 ]]; do
         set_step
@@ -67,8 +69,8 @@ if [[ $PLAYERSTATUS == *S* ]]; then
     sleep 0.5
     $VOLUMERESET
 
-elif [[ $PLAYERSTATUS == *T* ]]; then
-    # Playing and fading in
+elif [[ ${PLAYERSTATUS,,} == *t* ]]; then
+    # Start music and fading in
     $VOLUMEZERO
     sleep 0.5
     kill -18 $PLAYERPID
@@ -82,6 +84,10 @@ elif [[ $PLAYERSTATUS == *T* ]]; then
     done
     $VOLUMERESET
 
+elif [[ -z $PLAYERPID ]]; then
+    echo "Musicplayer: $MUSICPLAYER is not running."; sleep 5
+
 else
-    echo "Musicplayer: $MUSICPLAYER is not running."
+    echo "Unknown Error - PlayerStatus: $PLAYERSTATUS PID: $PLAYERPID"; sleep 5
 fi
+
