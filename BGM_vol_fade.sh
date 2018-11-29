@@ -16,6 +16,7 @@
 # 2018/10/31 - Halloween - Initial version
 # 2018/11/01 - All saints' Day - Improved fadein, avoid 2nd script run
 # 2018/11/03 - Detection of Playerstatus improved, code cleanup
+# 2018/11/29 - Added commandline parameter force for -STOP and -CONT
 
 # Reason: I like the pyscript for BGM but it has it flaws and caveeats
 # so I recommend the mpg123 method brought by synack
@@ -44,6 +45,7 @@ VOLUMERESET="amixer -q -M set $VOLUMECHANNEL $VOLUMEALSA%"
 # Player-Status
 PLAYERPID="$(pidof $MUSICPLAYER)"
 PLAYERSTATUS=$(ps -ostate= -p $PLAYERPID 2> /dev/null)
+[[ -n $PLAYERPID && -n $1 ]] && PLAYERSTATUS=$1
 
 function set_step() {
     case $FADEVOLUME in
