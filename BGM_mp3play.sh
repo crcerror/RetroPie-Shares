@@ -2,7 +2,7 @@
 #
 # Background Music Box (BMB)
 #
-# Shows current song, and let you select a song
+# Shows current song, and let you select serveral songs
 # you need lsof tool to detect current song playing
 # install with: sudo apt install lsof
 #
@@ -43,11 +43,18 @@ function build_find_array() {
     unset array[0]
 }
 
+# Dialog Error
+# Display dialog --msgbox with text parsed with by function call
+
+function dialog_error() {
+    dialog --title " Error! " --msgbox "$1" 0 0
+}
+
 # ---- Script Start ----
 
-! [[ -d $BGM_PATH ]] && echo "Directory $BGM_PATH not found! Exit!" && exit
-  [[ $PLAYER_INSTANCE -eq 0 ]] && echo "$BGM_PLAYER not found! Exit!" && exit
-! [[ $PLAYER_INSTANCE -eq 1 ]] && echo "There are $PLAYER_INSTANCE instances of $BGM_PLAYER running! Only 1 instance supported!" && exit
+! [[ -d $BGM_PATH ]] && dialog_error "Directory $BGM_PATH not found! Exit!" && exit
+  [[ $PLAYER_INSTANCE -eq 0 ]] && dialog_error "$BGM_PLAYER not found! Exit!" && exit
+! [[ $PLAYER_INSTANCE -eq 1 ]] && dialog_error "There are $PLAYER_INSTANCE instances of $BGM_PLAYER running! Only 1 instance supported!" && exit
 
 # Build file array
 cd "$BGM_PATH"
@@ -58,32 +65,40 @@ songname=$(lsof -c $BGM_PLAYER -F | grep "$BGM_PATH")
 songname="${songname##*/}"
 
 # Build dialog
-cmd=(dialog --backtitle "Currently Playing: $songname" \
-            --title " The Background Music Box "
-            --ok-label " Select " \
-            --cancel-label " Cancel " \
-            --help-button --help-label " Shuffle "
-            --stdout \
-            --no-items \
-            --menu "Currently ${#array[@]} music files found in $BGM_PATH" 16 68 12)
-file=$("${cmd[@]}" "${array[@]}")
-button=$?
+while true; do
+    cmd=(dialog --backtitle "Currently Playing: $songname" \
+                --extra-button --extra-label " PlayList " \
+                --title " The Background Music Box " \
+                --ok-label " Select " --cancel-label " Cancel " \
+                --help-button --help-label " Shuffle " \
+                --stdout --no-items --default-item "$file" \
+                --menu "Currently ${#array[@]} music files found in $BGM_PATH\n${#farray[@]} songs stored in Playlist!" 16 68 12)
+    file=$("${cmd[@]}" "${array[@]}")
+    button=$?
 
-# Do actions
-case $button in
-    0) #Select/Okay Button
-        kill $PLAYER_PID
-        sleep 0.5
-        $BGM_PLAYER -q "$file" &
-    ;;
+    # Do actions
+    case $button in
+        0) #Select/Okay Button
+            kill $PLAYER_PID
+            sleep 0.5
+            farray+=("$file")
+            $BGM_PLAYER -q "${farray[@]}" &
+            exit
+        ;;
 
-    1) #Cancel Button
-        exit
-    ;;
+        1) #Cancel Button
+            exit
+        ;;
 
-    2) #HELP/SHUFFLE Button
-        kill $PLAYER_PID
-        sleep 0.5
-        $PLAYER_SHUFFLE &
-    ;;
-esac
+        2) #HELP/SHUFFLE Button
+            kill $PLAYER_PID
+            sleep 0.5
+            $PLAYER_SHUFFLE &
+            exit
+        ;;
+
+        3) #EXTRA/PLAYLIST Button
+           farray+=("$file")
+       ;;
+     esac
+done
