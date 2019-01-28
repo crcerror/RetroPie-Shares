@@ -14,7 +14,7 @@
 
 # ---- Set variables ----
 
-BGM_PATH="/media/usb0/BGM"
+BGM_PATH="/home/pi/BGM"
 BGM_PLAYER="mpg123"
 BGM_TYPE=".*\.\(mp3\|ogg\)"
 PLAYER_PID="$(pgrep -f $BGM_PLAYER)"
