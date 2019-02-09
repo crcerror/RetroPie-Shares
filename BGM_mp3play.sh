@@ -4,8 +4,8 @@
 #
 # 02/09/2019
 #
-# Shows current song, and let you select serveral songs
-# you do not need lsof tool to detect current song playing anymore
+# Shows current song, and let you select serveral songs in playlist
+# you need (again) lsof tool to detect current song playing anymore
 # if you like you still can install with: sudo apt install lsof
 # It's still an usefull tool, so enjoy!
 #
@@ -13,10 +13,10 @@
 # Plesae dear community, feel free to improve this script ;)
 #
 # by cyperghost for https://retropie.org.uk/
-
+# https://retropie.org.uk/forum/topic/21029
 
 # ---- Set variables ----
-BGM_PATH="/media/usb0/BGM"
+BGM_PATH="$HOME/BGM"
 BGM_PLAYER="mpg123"
 BGM_TYPE=".*\.\(mp3\|ogg\)"
 PLAYER_PID="$(pgrep -f $BGM_PLAYER)"
