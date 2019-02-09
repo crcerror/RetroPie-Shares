@@ -2,9 +2,12 @@
 #
 # Background Music Box (BMB)
 #
+# 02/09/2019
+#
 # Shows current song, and let you select serveral songs
-# you need lsof tool to detect current song playing
-# install with: sudo apt install lsof
+# you do not need lsof tool to detect current song playing anymore
+# if you like you still can install with: sudo apt install lsof
+# It's still an usefull tool, so enjoy!
 #
 # This script provides some functions how a graphical player CAN look like
 # Plesae dear community, feel free to improve this script ;)
@@ -13,13 +16,13 @@
 
 
 # ---- Set variables ----
-
-BGM_PATH="/home/pi/BGM"
+BGM_PATH="/media/usb0/BGM"
 BGM_PLAYER="mpg123"
 BGM_TYPE=".*\.\(mp3\|ogg\)"
 PLAYER_PID="$(pgrep -f $BGM_PLAYER)"
 PLAYER_INSTANCE="$(pgrep -c -f $BGM_PLAYER)"
 PLAYER_SHUFFLE="$BGM_PLAYER -q -Z $BGM_PATH/*.mp3"
+
 # ---- function calls ----
 
 # Rebuild Filenames, if $i starts with "./" an new filename is found
@@ -43,16 +46,28 @@ function build_find_array() {
     unset array[0]
 }
 
-# Dialog Error
+# Dialogs - dialog_error parse test, dialog_yesno parse text and dialogtitle
 # Display dialog --msgbox with text parsed with by function call
 
 function dialog_error() {
-    dialog --title " Error! " --msgbox "$1" 0 0
+    dialog --title " Error! " --msgbox "$1" 7 45
+}
+
+function dialog_yesno() {
+    dialog --title " $2 " --yesno "$1" 10 55
 }
 
 # ---- Script Start ----
 
 ! [[ -d $BGM_PATH ]] && dialog_error "Directory $BGM_PATH not found! Exit!" && exit
+
+if [[ $PLAYER_INSTANCE -eq 0 ]]; then
+    dialog_yesno "$BGM_PLAYER not running!\nShould I try to start it using shuffle mode?\n\nShuffle command: $PLAYER_SHUFFLE"
+    [[ $? -eq 0 ]] || exit
+    $PLAYER_SHUFFLE &
+    exit
+fi
+
   [[ $PLAYER_INSTANCE -eq 0 ]] && dialog_error "$BGM_PLAYER not found! Exit!" && exit
 ! [[ $PLAYER_INSTANCE -eq 1 ]] && dialog_error "There are $PLAYER_INSTANCE instances of $BGM_PLAYER running! Only 1 instance supported!" && exit
 
@@ -60,7 +75,8 @@ function dialog_error() {
 cd "$BGM_PATH"
 build_find_array "$(find . -maxdepth 1 -iregex $BGM_TYPE -type f | sort)"
 
-# Get current song
+# Get current song and number of song
+songindir="$(ps aux | grep $BGM_PLAYER | grep -o $BGM_PATH | wc -l)"
 songname=$(lsof -c $BGM_PLAYER -F | grep "$BGM_PATH")
 songname="${songname##*/}"
 
@@ -69,19 +85,19 @@ while true; do
     cmd=(dialog --backtitle "Currently Playing: $songname" \
                 --extra-button --extra-label " PlayList " \
                 --title " The Background Music Box " \
-                --ok-label " Select " --cancel-label " Cancel " \
+                --ok-label " Let's play " --cancel-label " Cancel " \
                 --help-button --help-label " Shuffle " \
                 --stdout --no-items --default-item "$file" \
-                --menu "Currently ${#array[@]} music files found in $BGM_PATH\n${#farray[@]} songs stored in Playlist!" 16 68 12)
+                --menu "Currently ${#array[@]} music files found in $BGM_PATH\n$songindir tracks are active in current Playlist!\n${#farray[@]} tracks stored to new Playlist!" 16 68 12)
     file=$("${cmd[@]}" "${array[@]}")
     button=$?
 
     # Do actions
     case $button in
         0) #Select/Okay Button
-            kill $PLAYER_PID
+            kill $PLAYER_PID >/dev/null 2>&1
             sleep 0.5
-            farray+=("$file")
+            [[ ${#farray[@]} -eq 0 || "${farray[-1]}" != "$BGM_PATH/$file" ]] && farray+=("$BGM_PATH/$file")
             $BGM_PLAYER -q "${farray[@]}" &
             exit
         ;;
@@ -98,7 +114,7 @@ while true; do
         ;;
 
         3) #EXTRA/PLAYLIST Button
-           farray+=("$file")
+           farray+=("$BGM_PATH/$file")
        ;;
      esac
 done
