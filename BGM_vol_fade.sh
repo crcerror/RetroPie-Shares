@@ -34,7 +34,7 @@ done
 
 # Get ALSA volume value and calculate step
 VOLUMEALSA=$(amixer -M get $VOLUMECHANNEL | grep -o "...%]")
-VOLUMEALSA=${VOLUMEALSA//[^[:alnum:].]/}
+VOLUMEALSA=${VOLUMEALSA//[^[:digit:].]/}
 FADEVOLUME=
 VOLUMESTEP=
 
