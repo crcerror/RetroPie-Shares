@@ -13,7 +13,7 @@ smart_wait() {
     local PID=$1
     while [[ -e /proc/$PID ]]
     do
-        sleep 0.05
+        sleep 0.25
     done
 }
 
