@@ -2,12 +2,12 @@
 #
 # Background Music Box (BMB)
 #
-# 2019/09/03
+# 02/09/2019
 #
 # Shows current song, and let you select serveral songs in playlist
-# you need (again) lsof tool to detect current song playing anymore
-# if you like you still can install with: sudo apt install lsof
-# It's still an usefull tool, so enjoy!
+# you need (again) lsof tool to detect current song playing
+# you need also mp3info to obtain play length of current song
+# Type `sudo apt install lsof mp3info` to install
 #
 # This script provides some functions how a graphical player CAN look like
 # Plesae dear community, feel free to improve this script ;)
@@ -25,28 +25,6 @@ PLAYER_INSTANCE="$(pgrep -c -f $BGM_PLAYER)"
 PLAYER_SHUFFLE="$BGM_PLAYER -q -Z $BGM_PATH/*.mp3 > /dev/null"
 
 # ---- function calls ----
-
-# Rebuild Filenames, if $i starts with "./" an new filename is found
-
-function build_find_array() {
-
-    local i;local ii
-    local filefind="$1"
-
-    for i in $filefind; do
-        if [[ ${i:0:2} == "./" ]]; then
-            array+=("${ii:2}")
-            ii=
-            ii="$i"
-         else
-            ii="$ii $i"
-         fi
-    done
-
-    array+=("${ii:2}")
-    unset array[0]
-}
-
 # Dialogs - dialog_error parse test, dialog_yesno parse text and dialogtitle
 # Display dialog --msgbox with text parsed with by function call
 
@@ -74,7 +52,7 @@ fi
 
 # Build file array
 cd "$BGM_PATH"
-build_find_array "$(find . -maxdepth 1 -iregex $BGM_TYPE -type f | sort)"
+readarray -t array < <(find -maxdepth 1 -iregex $BGM_TYPE -type f | sort)
 
 # Get current song and number of song
 songindir="$(ps aux | grep $BGM_PLAYER | grep -o $BGM_PATH | wc -l)"
@@ -91,7 +69,7 @@ while true; do
                 --help-button --help-label " Shuffle " \
                 --stdout --no-items --default-item "$file" \
                 --menu "Currently ${#array[@]} music files found in $BGM_PATH\n$songindir tracks are active in current Playlist!\n${#farray[@]} tracks stored to new Playlist!" 16 68 12)
-    file=$("${cmd[@]}" "${array[@]}")
+    file=$("${cmd[@]}" "${array[@]#*/}")
     button=$?
 
     # Do actions
