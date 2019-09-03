@@ -2,7 +2,7 @@
 #
 # Background Music Box (BMB)
 #
-# 02/09/2019
+# 2019/09/03
 #
 # Shows current song, and let you select serveral songs in playlist
 # you need (again) lsof tool to detect current song playing anymore
@@ -16,12 +16,13 @@
 # https://retropie.org.uk/forum/topic/21029
 
 # ---- Set variables ----
-BGM_PATH="$HOME/BGM"
+BGM_PATH="$HOME/RetroPie/bgm"
 BGM_PLAYER="mpg123"
+BGM_PATH="$(realpath $BGM_PATH)"
 BGM_TYPE=".*\.\(mp3\|ogg\)"
 PLAYER_PID="$(pgrep -f $BGM_PLAYER)"
 PLAYER_INSTANCE="$(pgrep -c -f $BGM_PLAYER)"
-PLAYER_SHUFFLE="$BGM_PLAYER -q -Z $BGM_PATH/*.mp3"
+PLAYER_SHUFFLE="$BGM_PLAYER -q -Z $BGM_PATH/*.mp3 > /dev/null"
 
 # ---- function calls ----
 
@@ -79,10 +80,11 @@ build_find_array "$(find . -maxdepth 1 -iregex $BGM_TYPE -type f | sort)"
 songindir="$(ps aux | grep $BGM_PLAYER | grep -o $BGM_PATH | wc -l)"
 songname=$(lsof -c $BGM_PLAYER -F | grep "$BGM_PATH")
 songname="${songname##*/}"
+mp3length=$(mp3info "$songname" -p %m:%s)
 
 # Build dialog
 while true; do
-    cmd=(dialog --backtitle "Currently Playing: $songname" \
+    cmd=(dialog --backtitle "Currently Playing: $songname - $mp3length"\
                 --extra-button --extra-label " PlayList " \
                 --title " The Background Music Box " \
                 --ok-label " Let's play " --cancel-label " Cancel " \
@@ -98,7 +100,7 @@ while true; do
             kill $PLAYER_PID >/dev/null 2>&1
             sleep 0.5
             [[ ${#farray[@]} -eq 0 || "${farray[-1]}" != "$BGM_PATH/$file" ]] && farray+=("$BGM_PATH/$file")
-            $BGM_PLAYER -q "${farray[@]}" &
+            $BGM_PLAYER -q "${farray[@]}" > /dev/null &
             exit
         ;;
 
