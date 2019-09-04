@@ -55,7 +55,7 @@ readarray -t array < <(find -maxdepth 1 -iregex $BGM_TYPE -type f | sort)
 # Get current song and number of song
 songindir="$(ps aux | grep $BGM_PLAYER | grep -o $BGM_PATH | wc -l)"
 songname=$(lsof -c $BGM_PLAYER -F | grep "$BGM_PATH")
-songname="${songname#*/}"
+songname="${songname##*/}"
 mp3length=$(mp3info "$songname" -p %m:%s)
 
 # Build dialog
