@@ -2,14 +2,14 @@
 #
 # Background Music Box (BMB)
 #
-# 02/09/2019
+# 2019/09/04
 #
 # Shows current song, and let you select serveral songs in playlist
 # you need (again) lsof tool to detect current song playing
 # you need also mp3info to obtain play length of current song
 # Type `sudo apt install lsof mp3info` to install
 #
-# This script provides some functions how a graphical player CAN look like
+# This script provides some functions how a graphical music player CAN look like
 # Plesae dear community, feel free to improve this script ;)
 #
 # by cyperghost for https://retropie.org.uk/
@@ -38,7 +38,8 @@ function dialog_yesno() {
 
 # ---- Script Start ----
 
-! [[ -d $BGM_PATH ]] && dialog_error "Directory $BGM_PATH not found! Exit!" && exit
+[[ -d $BGM_PATH ]] || { dialog_error "Directory $BGM_PATH not found! Exit!"; exit; }
+[[ $PLAYER_INSTANCE -gt 1 ]] && { dialog_error "There are $PLAYER_INSTANCE instances of $BGM_PLAYER running! Only 1 instance supported!"; exit; }
 
 if [[ $PLAYER_INSTANCE -eq 0 ]]; then
     dialog_yesno "$BGM_PLAYER not running!\nShould I try to start it using shuffle mode?\n\nShuffle command: $PLAYER_SHUFFLE"
@@ -47,9 +48,6 @@ if [[ $PLAYER_INSTANCE -eq 0 ]]; then
     exit
 fi
 
-  [[ $PLAYER_INSTANCE -eq 0 ]] && dialog_error "$BGM_PLAYER not found! Exit!" && exit
-! [[ $PLAYER_INSTANCE -eq 1 ]] && dialog_error "There are $PLAYER_INSTANCE instances of $BGM_PLAYER running! Only 1 instance supported!" && exit
-
 # Build file array
 cd "$BGM_PATH"
 readarray -t array < <(find -maxdepth 1 -iregex $BGM_TYPE -type f | sort)
@@ -57,7 +55,7 @@ readarray -t array < <(find -maxdepth 1 -iregex $BGM_TYPE -type f | sort)
 # Get current song and number of song
 songindir="$(ps aux | grep $BGM_PLAYER | grep -o $BGM_PATH | wc -l)"
 songname=$(lsof -c $BGM_PLAYER -F | grep "$BGM_PATH")
-songname="${songname##*/}"
+songname="${songname#*/}"
 mp3length=$(mp3info "$songname" -p %m:%s)
 
 # Build dialog
