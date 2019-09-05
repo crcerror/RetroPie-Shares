@@ -56,11 +56,10 @@ readarray -t array < <(find -maxdepth 1 -iregex $BGM_TYPE -type f | sort)
 songindir="$(ps aux | grep $BGM_PLAYER | grep -o $BGM_PATH | wc -l)"
 songname=$(lsof -c $BGM_PLAYER -F | grep "$BGM_PATH")
 songname="${songname##*/}"
-mp3length=$(mp3info "$songname" -p %m:%s)
 
 # Build dialog
 while true; do
-    cmd=(dialog --backtitle "Currently Playing: $songname - $mp3length"\
+    cmd=(dialog --backtitle "Currently Playing: $songname"\
                 --extra-button --extra-label " PlayList " \
                 --title " The Background Music Box " \
                 --ok-label " Let's play " --cancel-label " Cancel " \
