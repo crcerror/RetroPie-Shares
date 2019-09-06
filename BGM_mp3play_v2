@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# Background Music Box v2 (BMB)
+# Background Music Box (BMB)
 #
 # 2019/09/05
 #
@@ -22,7 +22,7 @@ BGM_PATH="$(realpath $BGM_PATH)"
 BGM_TYPE=".*\.\(mp3\|ogg\)"
 PLAYER_PID="$(pgrep -f $BGM_PLAYER)"
 PLAYER_INSTANCE="$(pgrep -c -f $BGM_PLAYER)"
-PLAYER_SHUFFLE="$BGM_PLAYER -q -Z $BGM_PATH/*.mp3 > /dev/null"
+PLAYER_SHUFFLE="$BGM_PLAYER -q -Z $BGM_PATH/*.mp3 < /dev/null"
 
 # ---- function calls ----
 # Dialogs - dialog_error parse test, dialog_yesno parse text and dialogtitle
@@ -63,9 +63,9 @@ songname="${songname%.*}"
 
 # Build dialog
 while true; do
-    cmd=(dialog --backtitle "Currently Playing: $songname -- $mp3length"\
-                --extra-button --extra-label " PlayList " \
+    cmd=(dialog --backtitle "Currently Playing: $songname -- $mp3length" \
                 --title " The Background Music Box " \
+                --extra-button --extra-label " PlayList " \
                 --ok-label " Let's play " --cancel-label " Cancel " \
                 --help-button --help-label " Shuffle " \
                 --stdout --no-items --item-help --default-item "$file" \
@@ -78,8 +78,8 @@ while true; do
         0) #Select/Okay Button
             kill $PLAYER_PID >/dev/null 2>&1
             sleep 0.5
-            [[ ${#farray[@]} -eq 0 || "${farray[-1]}" != "$BGM_PATH/$file" ]] && farray+=("$BGM_PATH/$file")
-            $BGM_PLAYER -q "${farray[@]}" > /dev/null &
+            [[ ${#farray[@]} -eq 0 || "${farray[-1]}" != "$BGM_PATH/$file" ]] && farray=("$BGM_PATH/$file" ${farray[@]})
+            $BGM_PLAYER -q "${farray[@]}" < /dev/null &
             exit
         ;;
 
@@ -88,7 +88,7 @@ while true; do
         ;;
 
         2) #HELP/SHUFFLE Button
-            kill $PLAYER_PID
+            kill $PLAYER_PID >/dev/null 2>&1
             sleep 0.5
             $PLAYER_SHUFFLE &
             exit
