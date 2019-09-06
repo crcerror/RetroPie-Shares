@@ -74,7 +74,7 @@ while true; do
         0) #Select/Okay Button
             kill $PLAYER_PID >/dev/null 2>&1
             sleep 0.5
-            [[ ${#farray[@]} -eq 0 || "${farray[-1]}" != "$BGM_PATH/$file" ]] && farray+=("$BGM_PATH/$file")
+            [[ ${#farray[@]} -eq 0 || "${farray[-1]}" != "$BGM_PATH/$file" ]] && farray+=("$BGM_PATH/$file" ${farray[@]})
             $BGM_PLAYER -q "${farray[@]}" < /dev/null &
             exit
         ;;
