@@ -22,7 +22,7 @@ BGM_PATH="$(realpath $BGM_PATH)"
 BGM_TYPE=".*\.\(mp3\|ogg\)"
 PLAYER_PID="$(pgrep -f $BGM_PLAYER)"
 PLAYER_INSTANCE="$(pgrep -c -f $BGM_PLAYER)"
-PLAYER_SHUFFLE="$BGM_PLAYER -q -Z $BGM_PATH/*.mp3 > /dev/null"
+PLAYER_SHUFFLE="$BGM_PLAYER -q -Z $BGM_PATH/*.mp3 < /dev/null"
 
 # ---- function calls ----
 # Dialogs - dialog_error parse test, dialog_yesno parse text and dialogtitle
@@ -75,7 +75,7 @@ while true; do
             kill $PLAYER_PID >/dev/null 2>&1
             sleep 0.5
             [[ ${#farray[@]} -eq 0 || "${farray[-1]}" != "$BGM_PATH/$file" ]] && farray+=("$BGM_PATH/$file")
-            $BGM_PLAYER -q "${farray[@]}" > /dev/null &
+            $BGM_PLAYER -q "${farray[@]}" < /dev/null &
             exit
         ;;
 
